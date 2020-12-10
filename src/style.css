@@ -1,13 +1,27 @@
 h1 {
     text-align: center;
 }
+
 #mainDiv {
     display: grid;
     justify-content: center;
 }
+
 .cell-color {
     background-color: cadetblue;
     display: flex;
     justify-content: center;
     align-items: center;
+}
+
+.btn {
+    font-size: 24px !important;
+}
+
+.m10 {
+    margin: 10px;
+}
+
+.p30 {
+    padding: 30px
 }

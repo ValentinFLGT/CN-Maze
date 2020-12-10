@@ -3,7 +3,7 @@ async function loadJson() {
     const data = await fetch('labyrinthes.json')
         .then(response => response.json());
 
-    let gridSize = 25;
+    let gridSize = 15;
     let mazeName = 'ex-0';
 
     return {
@@ -79,13 +79,106 @@ function createMaze(mazeBoard) {
         // Then we add the child element to his parent
         mainDiv.appendChild(createCell);
     }
-
-    // We call our dfs function to find the solution and display it
-    iterativeDfs(cellData, cellData[0], cellData[cellData.length - 1])
+    document.getElementById('dfsIterative').addEventListener('click', function () {
+        iterativeDfs(cellData, cellData[0], cellData[cellData.length - 1]);
+    }, false);
+    document.getElementById('dfsRecursive').addEventListener('click', function () {
+        dfsRecursive(cellData, cellData[0], cellData[cellData.length - 1]);
+    }, false);
+    document.getElementById('bfsIterative').addEventListener('click', function () {
+        iterativeBfs(cellData, cellData[0], cellData[cellData.length - 1]);
+    }, false);
 }
 
 // Timer function to delay path display
 const timer = ms => new Promise(res => setTimeout(res, ms));
+
+const optimalDfsPath = [];
+
+function iterativeDfs(grid, vertex, target) {
+
+    let stack = [];
+
+    // const notOptimalDfsPath = [];
+
+    stack.push(vertex);
+
+    while (stack.length) {
+        if (vertex === target) {
+            colorCells(optimalDfsPath);
+            console.log(optimalDfsPath);
+            console.log("You've reached the cell " + vertex.cellNumber);
+            break
+        }
+
+        vertex = stack.pop();
+        // notOptimalDfsPath.push(vertex.cellNumber);
+
+        if (!vertex.visited) {
+            vertex.visited = true;
+            stack.push(vertex);
+            optimalDfsPath.push(vertex.cellNumber);
+
+            for (let node of vertex.adjacentCells) {
+                stack.push(grid[node]);
+            }
+        }
+    }
+}
+
+async function dfsRecursive(grid, vertex, target) {
+
+    optimalDfsPath.push(vertex.cellNumber);
+
+    vertex.visited = true;
+
+    if (vertex === target) {
+        console.log("You've reached cell " + vertex.cellNumber);
+        console.log('Optimal path: ', optimalDfsPath);
+        await colorCells(optimalDfsPath, grid.length - 1);
+        return true;
+    }
+
+    for (let node of vertex.adjacentCells.reverse()) {
+        if (!grid[node].visited) {
+            if (await dfsRecursive(grid, grid[node], target)) {
+                return true;
+            }
+        }
+    }
+}
+
+function iterativeBfs(grid, vertex, target) {
+
+    let queue = [];
+
+    const optimalDfsPath = [];
+    // const notOptimalDfsPath = [];
+
+    queue.push(vertex);
+
+    while (queue.length) {
+        if (vertex === target) {
+            colorCells(optimalDfsPath);
+            console.log(optimalDfsPath);
+            console.log("You've reached the cell " + vertex.cellNumber);
+            break
+        }
+
+        vertex = queue.shift();
+        // notOptimalDfsPath.push(vertex.cellNumber);
+
+        if (!vertex.visited) {
+            vertex.visited = true;
+            queue.push(vertex);
+            optimalDfsPath.push(vertex.cellNumber);
+
+            for (let node of vertex.adjacentCells) {
+                queue.push(grid[node]);
+            }
+        }
+    }
+}
 
 async function colorCells(optimalPathCell) {
 
@@ -105,82 +198,6 @@ async function colorCells(optimalPathCell) {
         await timer(50)
     }
 }
-
-function iterativeDfs(grid, vertex, target) {
-
-    let stack = [];
-
-    const optimalDfsPath = [];
-    const notOptimalDfsPath = [];
-
-    stack.push(vertex);
-
-    while (stack.length) {
-        if (vertex === target) {
-            colorCells(optimalDfsPath);
-            console.log(optimalDfsPath);
-            console.log("You've reached the cell " + vertex.cellNumber);
-            break
-        }
-
-        vertex = stack.pop();
-        notOptimalDfsPath.push(vertex.cellNumber);
-
-        if (!vertex.visited) {
-            vertex.visited = true;
-            stack.push(vertex);
-            optimalDfsPath.push(vertex.cellNumber);
-
-            for (let node of vertex.adjacentCells) {
-                stack.push(grid[node]);
-            }
-        }
-    }
-}
-
-// async function customDfs(startPos, targetPos, grid) {
-//
-//     const visited = [];
-//     const stack = [];
-//     const root = startPos;
-//     const target = targetPos;
-//
-//     stack.push(root);
-//
-//     while (stack.length) {
-//
-//         const current = stack.pop();
-//
-//         let displayDfsPath = document.getElementsByClassName('cell-' + current.cellNumber);
-//
-//         if (current === target) {
-//             displayDfsPath[0].style.background = 'springgreen';
-//             visited.push(current);
-//             console.log(visited);
-//             return current;
-//         }
-//
-//         // If the current cell isn't visited we continue
-//         if (visited.indexOf(current) !== -1) {
-//             continue;
-//         }
-//
-//         if (current.cellNumber !== 0) {
-//             console.log(displayDfsPath[0]);
-//             displayDfsPath[0].style.background = 'mediumpurple';
-//         }
-//
-//         visited.push(current);
-//
-//         // We push the adjacent cells of the current one
-//         for (let adjacentCell of current.adjacentCells) {
-//             stack.push(grid[adjacentCell]);
-//         }
-//
-//         // We apply a timeout to render the path dynamically
-//         await timer(50);
-//     }
-// }
 
 async function main() {
     // Async main function to call our createMaze() which take an asynchronous parameter
